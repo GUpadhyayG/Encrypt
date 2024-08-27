@@ -1,5 +1,10 @@
 package com.example.encryption_app;
 
+import static android.widget.Toast.*;
+import static com.example.encryption_app.AES.generateKey;
+import static com.example.encryption_app.AES.encrypt;
+//import static com.example.encrypt.AES.generateKey;
+
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -15,14 +20,18 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.security.InvalidAlgorithmParameterException;
+import java.util.Base64;
+
+import javax.crypto.SecretKey;
+
 public class MainActivity extends AppCompatActivity {
 
     EditText et;
-    TextView txt;
+    EditText txt;
 
     Button btn1,btn2,btn3,btn4,btn5;
 
-    private EncryptionManager encryptionManager;
     private String result;
 
 
@@ -38,78 +47,84 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        et=findViewById(R.id.et1);
-        txt=findViewById(R.id.txt1);
+        et = findViewById(R.id.et1);
+        txt = findViewById(R.id.txt1);
 
-        btn1=findViewById(R.id.btnBase64);
-        btn2=findViewById(R.id.btnDecodeBase64);
-        btn3=findViewById(R.id.btnSHA);
-        btn4=findViewById(R.id.btnEncrypt);
-        btn5=findViewById(R.id.btnDecrypt);
+        btn1 = findViewById(R.id.btnEncrypt);
+        btn2 = findViewById(R.id.btnDecrypt);
+        btn3 = findViewById(R.id.btnSHA);
+        btn4 = findViewById(R.id.btnBase64);
+        btn5 = findViewById(R.id.btnDecodeBase64);
 
-        encryptionManager =EncryptionManager.getInstance();
+
 
         btn1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String data =et.getText().toString();
-                if(!TextUtils.isEmpty(data))
+                SecretKey secretKey = null;
+                try {
+                    secretKey = generateKey();
+                    String encryptedText = AES.encrypt(String.valueOf(et.getText()),secretKey);
+                    txt.setText(encryptedText);
+                }
+                catch (Exception e)
                 {
-                    result=encryptionManager.encodeBase64(data);
-                    txt.setText(result);
+                    e.printStackTrace();
                 }
-                else{
-                    Toast.makeText(MainActivity.this,"Field is empty.",Toast.LENGTH_SHORT).show();
-                }
+
             }
         });
 
         btn2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(!TextUtils.isEmpty(result))
-                {
-                    result=encryptionManager.decodeBase64(result);
-                    txt.setText((result));
+                 SecretKey secretKey=null;
+                try {
+                    secretKey=generateKey();
+                    String decryptedText = AES.decrypt(String.valueOf(et.getText()), secretKey);
+                    txt.setText(decryptedText);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(MainActivity.this, "Decryption failed!", Toast.LENGTH_SHORT).show();
                 }
             }
         });
+
+        btn4.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                String inputText = et.getText().toString();
+                String encodedText = BASE64encodeDecode.encodeToBase64(inputText);
+                txt.setText(encodedText);
+
+            }
+        });
+        btn5.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String encodedText = et.getText().toString();
+                String decodedText = BASE64encodeDecode.decodeFromBase64(encodedText);
+                txt.setText(decodedText);
+            }
+        });
+
         btn3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String data=et.getText().toString();
-                if(!TextUtils.isEmpty(data)) {
-                    result = encryptionManager.getSHA256(data);
-                    txt.setText(result);
-
-                    if (result.equals(encryptionManager.getSHA256(data))) {
-                        Log.d("TAG", "SAME");
+                String inputText = et.getText().toString();
+                if (!TextUtils.isEmpty(inputText)) {
+                    // Generate SHA-256 hash using the HashUtils class
+                    String hashedText = HashUtils.hashWithSHA256(inputText);
+                    if (hashedText != null) {
+                        txt.setText(hashedText); // Display the hashed text
                     } else {
-                        Log.d("TAG", "same");
+                        Toast.makeText(MainActivity.this, "Hashing failed!", Toast.LENGTH_SHORT).show();
                     }
+                } else {
+                    Toast.makeText(MainActivity.this, "Please enter text to hash!", Toast.LENGTH_SHORT).show();
                 }
-                else {
-                    Toast.makeText(MainActivity.this,"Field is empty",Toast.LENGTH_SHORT).show();
-                }
-            }
-
-        });
-
-        btn1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // encrypt logic
             }
         });
-
-        btn2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Decrypt logic
-            }
-        });
-
-
-
     }
 }
