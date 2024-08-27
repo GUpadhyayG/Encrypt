@@ -5,6 +5,7 @@ import static com.example.encryption_app.AES.generateKey;
 import static com.example.encryption_app.AES.encrypt;
 //import static com.example.encrypt.AES.generateKey;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -61,34 +62,19 @@ public class MainActivity extends AppCompatActivity {
         btn1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                SecretKey secretKey = null;
-                try {
-                    secretKey = generateKey();
-                    String encryptedText = AES.encrypt(String.valueOf(et.getText()),secretKey);
-                    txt.setText(encryptedText);
-                }
-                catch (Exception e)
-                {
-                    e.printStackTrace();
-                }
+                //SecretKey secretKey = null;
+
+                Intent intent=new Intent(MainActivity.this,Activity2.class);
+                intent.putExtra("text",et.getText().toString());
+
+                startActivity(intent);
+
 
             }
+
+
         });
 
-        btn2.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                 SecretKey secretKey=null;
-                try {
-                    secretKey=generateKey();
-                    String decryptedText = AES.decrypt(String.valueOf(et.getText()), secretKey);
-                    txt.setText(decryptedText);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Toast.makeText(MainActivity.this, "Decryption failed!", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
 
         btn4.setOnClickListener(new View.OnClickListener() {
             @Override
